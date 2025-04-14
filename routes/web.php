@@ -2,9 +2,10 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,9 +19,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// Trang chủ - Tạm thời sử dụng view welcome mặc định
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('home');
+
+// Sản phẩm - Các route đã có controller và methods
+Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+Route::get('/products/featured', [ProductController::class, 'featured'])->name('products.featured');
+Route::get('/products/category/{slug}', [ProductController::class, 'category'])->name('products.category');
+Route::get('/products/search', [ProductController::class, 'search'])->name('products.search');
+Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 
 // Authentication Routes
 Route::middleware('guest')->group(function () {
@@ -34,10 +43,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
-// Admin routes - Sử dụng cú pháp đơn giản hơn
+// Admin routes
 Route::group(['prefix' => 'admin', 'middleware' => ['web', 'auth']], function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::resource('products', ProductController::class)->names('admin.products');
+    Route::resource('products', AdminProductController::class)->names('admin.products');
     Route::resource('categories', CategoryController::class)->names('admin.categories');
     Route::resource('users', UserController::class)->names('admin.users');
 });
