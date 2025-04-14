@@ -4,94 +4,50 @@
 
 @section('content')
 <div class="container py-5">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('home') }}">Trang chủ</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('products.index') }}">Sản phẩm</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Sản phẩm nổi bật</li>
-        </ol>
-    </nav>
+    <h1 class="mb-4">Sản phẩm nổi bật</h1>
     
     <div class="row">
-        <!-- Sidebar Filters -->
-        <div class="col-lg-3 mb-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Danh mục sản phẩm</h5>
-                </div>
-                <div class="card-body">
-                    <div class="list-group list-group-flush">
-                        @foreach(App\Models\Category::where('is_active', true)->get() as $category)
-                            <a href="{{ route('products.category', $category->slug) }}" class="list-group-item list-group-item-action">
-                                {{ $category->name }}
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Product List -->
-        <div class="col-lg-9">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">Sản phẩm nổi bật</h2>
-                <span>Hiển thị {{ $products->count() }} / {{ $products->total() }} sản phẩm</span>
-            </div>
-            
-            <div class="row">
-                @forelse($products as $product)
-                    <div class="col-md-4 mb-4">
-                        <div class="card h-100 border-0 shadow-sm product-card">
-                            <div class="position-relative">
-                                <a href="{{ route('products.show', $product->slug) }}">
-                                    <img src="{{ $product->thumbnail ? Storage::url($product->thumbnail) : asset('images/no-image.png') }}" 
-                                        class="card-img-top" alt="{{ $product->name }}">
-                                </a>
-                                @if($product->sale_price && $product->sale_price < $product->price)
-                                    <div class="product-badge bg-danger">Sale</div>
-                                @endif
-                                <div class="product-badge bg-primary">Hot</div>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <a href="{{ route('products.show', $product->slug) }}" class="text-decoration-none text-dark">
-                                        {{ $product->name }}
-                                    </a>
-                                </h5>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        @if($product->sale_price && $product->sale_price < $product->price)
-                                            <span class="text-danger fw-bold">{{ number_format($product->sale_price) }}đ</span>
-                                            <span class="text-muted text-decoration-line-through ms-2">{{ number_format($product->price) }}đ</span>
-                                        @else
-                                            <span class="text-danger fw-bold">{{ number_format($product->price) }}đ</span>
-                                        @endif
-                                    </div>
-                                    <form action="{{ route('cart.add') }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                        <input type="hidden" name="quantity" value="1">
-                                        <button type="submit" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-cart-plus"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
+        @forelse($featuredProducts as $product)
+            <div class="col-md-3 mb-4">
+                <div class="card product-card h-100">
+                    @if($product->sale_price && $product->sale_price < $product->price)
+                        <div class="badge bg-danger position-absolute top-0 end-0 m-2">Giảm giá</div>
+                    @endif
+                    
+                    @if($product->thumbnail)
+                        <img src="{{ asset('storage/' . $product->thumbnail) }}" class="card-img-top" alt="{{ $product->name }}">
+                    @else
+                        <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="{{ $product->name }}">
+                    @endif
+                    
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ $product->name }}</h5>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            @if($product->sale_price && $product->sale_price < $product->price)
+                                <span class="text-muted text-decoration-line-through">{{ number_format($product->price) }}₫</span>
+                                <span class="fw-bold text-primary">{{ number_format($product->sale_price) }}₫</span>
+                            @else
+                                <span class="fw-bold text-primary">{{ number_format($product->price) }}₫</span>
+                            @endif
+                        </div>
+                        <p class="card-text flex-grow-1">{{ Str::limit($product->description, 100) }}</p>
+                        <div class="d-grid mt-auto">
+                            <a href="{{ route('products.show', $product->slug) }}" class="btn btn-primary">Xem chi tiết</a>
                         </div>
                     </div>
-                @empty
-                    <div class="col-12">
-                        <div class="alert alert-info">
-                            Không có sản phẩm nổi bật nào.
-                        </div>
-                    </div>
-                @endforelse
+                </div>
             </div>
-            
-            <div class="d-flex justify-content-center mt-4">
-                {{ $products->links() }}
+        @empty
+            <div class="col-12">
+                <div class="alert alert-info">
+                    Không có sản phẩm nổi bật nào.
+                </div>
             </div>
-        </div>
+        @endforelse
+    </div>
+    
+    <div class="d-flex justify-content-center mt-4">
+        {{ $featuredProducts->links() }}
     </div>
 </div>
 @endsection
@@ -99,19 +55,13 @@
 @push('styles')
 <style>
     .product-card {
-        transition: transform 0.3s;
+        transition: transform 0.3s ease;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
+    
     .product-card:hover {
-        transform: translateY(-5px);
-    }
-    .product-badge {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        color: white;
-        padding: 5px 10px;
-        border-radius: 3px;
-        font-size: 12px;
+        transform: translateY(-10px);
     }
 </style>
 @endpush

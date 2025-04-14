@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,12 +20,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Trang chủ - Tạm thời sử dụng view welcome mặc định
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+// Trang chủ - Sử dụng HomeController thay vì closure
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Sản phẩm - Các route đã có controller và methods
+// Sản phẩm - Client routes
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/featured', [ProductController::class, 'featured'])->name('products.featured');
 Route::get('/products/category/{slug}', [ProductController::class, 'category'])->name('products.category');
@@ -43,7 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
-// Admin routes
+// Admin routes - Giữ nguyên
 Route::group(['prefix' => 'admin', 'middleware' => ['web', 'auth']], function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::resource('products', AdminProductController::class)->names('admin.products');
