@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\LogoutController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +20,14 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+// Routes cho xác thực
+Route::match(['post', 'get'], 'login', [AuthController::class, 'login']);
+Route::post('register', [AuthController::class, 'register']);
+
+// Route logout mới sử dụng LogoutController
+Route::post('logout', [LogoutController::class, 'logout']);
+Route::get('logout/{token}', [LogoutController::class, 'logoutWithToken']);
 
 // Các routes cụ thể đặt trước
 Route::get('products/featured', [ProductController::class, 'getFeatured']);
